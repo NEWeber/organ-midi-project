@@ -1,9 +1,9 @@
 // last number is the channel number. i.e. if you want to change this to channel 2,
 // the NOTE_ON_CMD should be set to 0x91 and the off command should be changed as well.
+// Great Keyboard outputs to MIDI channel 1.
 #define NOTE_ON_CMD 0x90
 #define NOTE_OFF_CMD 0x80
 #define NOTE_VELOCITY 127
-// @todo: find a way to set output to a different MIDI channel
 
 //MIDI baud rate
 #define SERIAL_RATE 31250
