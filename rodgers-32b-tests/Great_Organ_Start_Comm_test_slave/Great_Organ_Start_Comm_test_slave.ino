@@ -140,19 +140,23 @@ delay(10);
 void noteOn(int noteNum)
 {
   queue.enqueue(1000 + (keyToMidiMap[noteNum]));
-
+  Serial.println(queue.front());
 }
 
 void noteOff(int noteNum)
 {
   queue.enqueue(2000 + (keyToMidiMap[noteNum]));
-  Serial.write(queue.front());
+  Serial.println(queue.front());
 }
 
 //This transmits the pressed notes to the master board  
 void getPressedNotes() 
 {
-  Wire.write(queue.dequeue());
+
+    Serial.println("sending notes");
+    Wire.write(queue.dequeue());
+    Wire.endTransmission();
+
 }  
 
 
