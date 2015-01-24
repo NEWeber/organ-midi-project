@@ -17,7 +17,7 @@
 // how many keys
 #define NUM_KEYS 61
 
-byte pressStateLower[NUM_KEYS] = {0};
+//byte pressStateLower[NUM_KEYS] = {0};
 
 // @todo: generate this with an object constructor
 const int c2Pin = A0;  
@@ -69,8 +69,8 @@ const int a5Pin = 24;
 const int a5SharpPin = 23;
 const int b5Pin = 22;
 //note the change here
-const int c6Pin = 19;  
-const int c6SharpPin = 18;
+const int c6Pin = 15;  
+const int c6SharpPin = 14;
 const int d6Pin = 2;
 const int d6SharpPin =  3;
 const int e6Pin = 4;  
@@ -103,8 +103,8 @@ void setup()
       keyPressed[i] = false;
       keyToMidiMap[i] = note;
       note++;
-   
   }
+  
   //go through all the input pins for the great notes and set them to INPUT_PULLUP, so when it connects to ground it will trigger
   for (int i = 0; i < NUM_KEYS; i++) {
     pinMode(greatNotes[i], INPUT_PULLUP);
@@ -123,12 +123,14 @@ void loop()
     //if the key has been pressed and it was not pressed before, send the note on message and set keyPressed to true
     if ((digitalRead(greatNotes[noteCounter]) == LOW) && (keyPressed[noteCounter] == false))
     {
+      Serial.println("A note was pressed!");
       keyPressed[noteCounter] = true;
       noteOn(noteCounter);
     }
     //if the key is released and it was held before, send note off and set keyPressed to false
     else if ((digitalRead(greatNotes[noteCounter]) == HIGH) && (keyPressed[noteCounter] == true))
     {
+      Serial.println("A note was released.");
       keyPressed[noteCounter] = false;
       noteOff(noteCounter);
     }
@@ -139,14 +141,18 @@ delay(10);
 
 void noteOn(int noteNum)
 {
-  queue.enqueue(1000 + (keyToMidiMap[noteNum]));
-  Serial.println(queue.front());
+  int sendThis = 100 + (keyToMidiMap[noteNum]);
+  queue.enqueue(sendThis);
+  Serial.println(sendThis);
+  //Serial.println(queue.front());
 }
 
 void noteOff(int noteNum)
 {
-  queue.enqueue(2000 + (keyToMidiMap[noteNum]));
-  Serial.println(queue.front());
+  int sendThis = 200 + (keyToMidiMap[noteNum]);
+  queue.enqueue(sendThis);
+  Serial.println(sendThis);
+  //Serial.println(queue.front());
 }
 
 //This transmits the pressed notes to the master board  
@@ -155,7 +161,6 @@ void getPressedNotes()
 
     Serial.println("sending notes");
     Wire.write(queue.dequeue());
-    Wire.endTransmission();
 
 }  
 

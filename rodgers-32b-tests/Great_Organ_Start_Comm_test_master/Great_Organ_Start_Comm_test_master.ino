@@ -16,40 +16,62 @@ void setup()
 
 void loop()
 {
-
-  Wire.requestFrom(1, 4);
-  int keyOnAndOff = Wire.read();
-  Serial.println(keyOnAndOff);
-  Serial.print((keyOnAndOff % 1000));
-  int nDigits = floor(log10(abs(keyOnAndOff))) + 1;
-    
-  if (getDigit(keyOnAndOff, 4) == 1) {
-    Serial.write(NOTE_ON_CMD);
-    Serial.write((keyOnAndOff % 1000));
-    Serial.write(NOTE_VELOCITY);
-    //note on stuff
+  //send request for two bytes to slave at address 2 (right now the great keyboard) to get data.
+  Wire.requestFrom(1, 2);
+  if(Wire.available() == 2) {
+    int keyOnAndOff = Wire.read();
+    Serial.println("Just got ");
+    Serial.print(keyOnAndOff);
+    Serial.print(" from the slave board!");
+      
+    if (findOnOrOff(keyOnAndOff)) {
+      Serial.println("Sending key number ");
+      Serial.print(findNoteNumber(keyOnAndOff));
+      Serial.print(" ON to MIDI!");
+      Serial.write(NOTE_ON_CMD);
+      Serial.write(findNoteNumber(keyOnAndOff));
+      Serial.write(NOTE_VELOCITY);
+      //note on stuff
+    }
+    else {
+      //note off stuff
+      Serial.println("Sending key number ");
+      Serial.print(findNoteNumber(keyOnAndOff));
+      Serial.print(" OFF to MIDI.");
+      Serial.write(NOTE_OFF_CMD);
+      Serial.write(findNoteNumber(keyOnAndOff));
+      Serial.write(NOTE_VELOCITY);
+    }
   }
-  else {
-    //note off stuff
-    Serial.write(NOTE_OFF_CMD);
-    Serial.write((keyOnAndOff % 1000));
-    Serial.write(NOTE_VELOCITY);
-  }
-  delay(5);
+  //play with delay value to get desired communication experience.
+  delay(1000);
 }
   
-// @todo: Pulled from Stack Exchange. This is wrong. Debug this
-int getDigit(int value, int positionFromLeft)
+//Find if a note is on or off: we're getting 1xx and 2xx from the slave board.
+//This will find what the digit in the 100s place is and return true if it's
+//1xx (on) and false if it's 2xx (off)
+boolean findOnOrOff(int incomingValue)
 {
-    int posFromRight = 1;
-    {
-        int v = value;
-        while (v /= 10)
-            ++posFromRight;
-    }
-    posFromRight -= positionFromLeft - 1;
-    while (--posFromRight)
-        value /= 10;
-    value %= 10;
-    return value > 0 ? value : -value;
+  int noteNumber = incomingValue % 100;
+  int OnOrOff = incomingValue - noteNumber;
+  if (OnOrOff == 100) 
+  {
+    return true;
+  }
+  else if (OnOrOff == 200) 
+  {
+    return false;
+  }
+  else 
+  {
+    Serial.println("Somthing is wrong with findOnOrOff!");
+  }
+}
+
+//This will just return the note number which is the tens and ones position
+// of the three digit number that we're getting from the slave board.
+int findNoteNumber(int incomingValue)
+{
+  int noteNumber = incomingValue % 100;
+  return noteNumber;
 }
