@@ -20,27 +20,31 @@ void loop()
   Wire.requestFrom(1, 2);
   if(Wire.available() == 2) {
     int keyOnAndOff = Wire.read();
-    Serial.println("Just got ");
-    Serial.print(keyOnAndOff);
-    Serial.print(" from the slave board!");
-      
-    if (findOnOrOff(keyOnAndOff)) {
-      Serial.println("Sending key number ");
-      Serial.print(findNoteNumber(keyOnAndOff));
-      Serial.print(" ON to MIDI!");
-      Serial.write(NOTE_ON_CMD);
-      Serial.write(findNoteNumber(keyOnAndOff));
-      Serial.write(NOTE_VELOCITY);
-      //note on stuff
+    if(keyOnAndOff == 1) {
     }
     else {
-      //note off stuff
-      Serial.println("Sending key number ");
-      Serial.print(findNoteNumber(keyOnAndOff));
-      Serial.print(" OFF to MIDI.");
-      Serial.write(NOTE_OFF_CMD);
-      Serial.write(findNoteNumber(keyOnAndOff));
-      Serial.write(NOTE_VELOCITY);
+      Serial.println("Just got ");
+      Serial.print(keyOnAndOff);
+      Serial.print(" from the slave board!");
+        
+      if (findOnOrOff(keyOnAndOff)) {
+        Serial.println("Sending key number ");
+        Serial.print(findNoteNumber(keyOnAndOff));
+        Serial.print(" ON to MIDI!");
+        Serial.write(NOTE_ON_CMD);
+        Serial.write(findNoteNumber(keyOnAndOff));
+        Serial.write(NOTE_VELOCITY);
+        //note on stuff
+      }
+      else {
+        //note off stuff
+        Serial.println("Sending key number ");
+        Serial.print(findNoteNumber(keyOnAndOff));
+        Serial.print(" OFF to MIDI.");
+        Serial.write(NOTE_OFF_CMD);
+        Serial.write(findNoteNumber(keyOnAndOff));
+        Serial.write(NOTE_VELOCITY);
+      }
     }
   }
   //play with delay value to get desired communication experience.

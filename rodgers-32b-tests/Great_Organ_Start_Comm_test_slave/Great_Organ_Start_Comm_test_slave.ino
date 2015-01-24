@@ -159,6 +159,11 @@ void noteOff(int noteNum)
 void getPressedNotes() 
 {
 
+    //keeps loop going
+    // @todo: figure out how to get rid of this 
+    if (queue.isEmpty()) {
+      queue.enqueue(1);
+    }
     Serial.println("sending notes");
     Wire.write(queue.dequeue());
 
