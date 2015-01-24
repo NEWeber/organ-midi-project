@@ -149,7 +149,7 @@ void noteOn(int noteNum)
 
 void noteOff(int noteNum)
 {
-  int sendThis = 200 + (keyToMidiMap[noteNum]);
+  int sendThis = (keyToMidiMap[noteNum]);
   queue.enqueue(sendThis);
   Serial.println(sendThis);
   //Serial.println(queue.front());
