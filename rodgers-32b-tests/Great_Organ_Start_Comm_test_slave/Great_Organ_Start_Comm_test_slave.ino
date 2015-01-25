@@ -158,15 +158,12 @@ void noteOff(int noteNum)
 //This transmits the pressed notes to the master board  
 void getPressedNotes() 
 {
-
-    //keeps loop going
-    // @todo: figure out how to get rid of this 
-    if (queue.isEmpty()) {
-      queue.enqueue(1);
-    }
-    Serial.println("sending notes");
-    Wire.write(queue.dequeue());
-
+  //keeps loop going
+  if (queue.isEmpty()) {
+    return;
+  }
+  Serial.println("sending notes");
+  Wire.write(queue.dequeue());
 }  
 
 

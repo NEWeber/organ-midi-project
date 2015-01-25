@@ -21,7 +21,7 @@ void loop()
   Wire.requestFrom(1, 2);
   if(Wire.available() == 2) {
     int keyOnAndOff = Wire.read();
-    if(keyOnAndOff == 1) {
+    if(keyOnAndOff == 0) {
     }
     else {
       Serial.print("Just got ");
@@ -49,12 +49,12 @@ void loop()
     }
   }
   //play with delay value to get desired communication experience.
-  delay(19);
+  delay(5);
 }
   
 //Find if a note is on or off: we're getting 1xx and 2xx from the slave board.
 //This will find what the digit in the 100s place is and return true if it's
-//1xx (on) and false if it's 2xx (off)
+//1xx (on) and false if it's xx (off)
 boolean findOnOrOff(int incomingValue)
 {
   int noteNumber = incomingValue % 100;
@@ -70,9 +70,11 @@ boolean findOnOrOff(int incomingValue)
 }
 
 //This will just return the note number which is the tens and ones position
-// of the three digit number that we're getting from the slave board.
+// of the two or three digit number that we're getting from the slave board.
 int findNoteNumber(int incomingValue)
 {
   int noteNumber = incomingValue % 100;
   return noteNumber;
 }
+
+
