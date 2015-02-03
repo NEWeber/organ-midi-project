@@ -3,7 +3,7 @@
 // When a key is pressed, it connects the pin to ground so that it will read LOW.
 // This code is for a slave board, it sends the notes that have been pressed and released.
 // If a key is newly pressed, it will queue a number, 1xx (xx being the note number) to be
-// sent. If newly released, it will queue xx to be sent. (Ex: if key 36 (c2) pressed, it will 
+// sent. If newly released, it will queue xx to be sent. (Ex: if key 36 (c2) is pressed, it will 
 // queue 136 to be sent to the master board.) The master board then takes those raw numbers 
 // and turns them into MIDI signals and sends them to the MIDI port.
 
