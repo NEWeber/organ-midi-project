@@ -19,9 +19,11 @@ void setup()
 
 void loop()
 {
-  //Query slave at address 1 and output results to MIDI channel 1
+  //Query slave at address 1 and output results to MIDI channel 1. (Great Keyboard outputs to MIDI channel 1.)
   queryKeyboard(1, 1);
   // @todo: add the other keyboards here when they're ready
+  //Rückpositiv outputs to MIDI channel 2
+  //Swell outputs to MIDI channel 3
   //play with delay value to get desired communication experience.
   delay(5);
 }
@@ -46,6 +48,9 @@ void queryKeyboard(int slaveAddress, int midiChannel) {
 //takes the incomingKeyData and sends the correct information to the MIDI port
 void rawDataToMidi(int midiChannel, int rawKeyValue) 
 {
+  // Set up MIDI serial commands.
+  // The last number is the channel number. (If you wanted to send a channel 2 note on command,
+  // it would be 0x91 (and the off command should be changed as well). Remember to count from 0.
   int noteOnCmd = ((0x90) + (midiChannel - 1));
   int noteOffCmd = ((0x80) + (midiChannel - 1));
   const int noteVelocity = 127;
@@ -89,7 +94,7 @@ void rawDataToMidi(int midiChannel, int rawKeyValue)
     }
   }
   
-  //This will just return the note number which is the tens and ones position
+  // This will just return the note number which is the tens and ones position
   // of the two or three digit number that we're getting from the slave board.
   int findNoteNumber(int incomingValue)
   {
