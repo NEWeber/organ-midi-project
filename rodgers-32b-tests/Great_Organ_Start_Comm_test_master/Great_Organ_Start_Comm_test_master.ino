@@ -2,19 +2,16 @@
 // interprets it and then sends it to the MIDI port.
 
 #include <Wire.h>
-
 //MIDI baud rate
 const int midiSerialRate = 31250;
 
 void setup()
 {
-  
   Wire.begin();
   //Send out MIDI signals out of Serial1, can switch this to serial after done debugging
   Serial1.begin(midiSerialRate);
   //Set up Serial out to send debugging messages to the computer.
   Serial.begin(9600);
-  
 }
 
 void loop()
@@ -30,10 +27,12 @@ void loop()
 
 //queryKeyboard takes what slave address you want to query and 
 // what MIDI channel you want to send results of the query to. 
-void queryKeyboard(int slaveAddress, int midiChannel) {
+void queryKeyboard(int slaveAddress, int midiChannel) 
+{
   //send request for two bytes to the address set in slaveAddress
   Wire.requestFrom(slaveAddress, 2);
-  if(Wire.available() == 2) {
+  if(Wire.available() == 2) 
+  {
     //read incoming value and assign it to incomingKeyData
     int incomingKeyData = Wire.read();
     //debugging info, can be deleted when done
@@ -54,28 +53,30 @@ void rawDataToMidi(int midiChannel, int rawKeyValue)
   int noteOnCmd = ((0x90) + (midiChannel - 1));
   int noteOffCmd = ((0x80) + (midiChannel - 1));
   const int noteVelocity = 127;
-  if (isItOn(rawKeyValue)) {
-      //note on debugging info (can be deleted when done)
-      Serial.print("Sending key number ");
-      Serial.print(findNoteNumber(rawKeyValue));
-      Serial.println(" ON to MIDI!");
-      //Sends the required note on information to the MIDI port 
-      //NOTE: It's going to Serial1, not Serial
-      Serial1.write(noteOnCmd);
-      Serial1.write(findNoteNumber(rawKeyValue));
-      Serial1.write(noteVelocity);
+  if (isItOn(rawKeyValue)) 
+  {
+    //note on debugging info (can be deleted when done)
+    Serial.print("Sending key number ");
+    Serial.print(findNoteNumber(rawKeyValue));
+    Serial.println(" ON to MIDI!");
+    //Sends the required note on information to the MIDI port 
+    //NOTE: It's going to Serial1, not Serial
+    Serial1.write(noteOnCmd);
+    Serial1.write(findNoteNumber(rawKeyValue));
+    Serial1.write(noteVelocity);
     }
-    else {
-      //note off debugging info (can be deleted when done)
-      Serial.print("Sending key number ");
-      Serial.print(findNoteNumber(rawKeyValue));
-      Serial.println(" OFF to MIDI.");
-      //Sends the required note off information to the MIDI port
-      //NOTE: It's going to Serial1, not Serial
-      Serial1.write(noteOnCmd);
-      Serial1.write(findNoteNumber(rawKeyValue));
-      Serial1.write(noteVelocity);
-    }
+  else 
+  {
+    //note off debugging info (can be deleted when done)
+    Serial.print("Sending key number ");
+    Serial.print(findNoteNumber(rawKeyValue));
+    Serial.println(" OFF to MIDI.");
+    //Sends the required note off information to the MIDI port
+    //NOTE: It's going to Serial1, not Serial
+    Serial1.write(noteOnCmd);
+    Serial1.write(findNoteNumber(rawKeyValue));
+    Serial1.write(noteVelocity);
+  }
   
   //Find if a note is on or off: we're getting xx (note xx off) and 1xx (note xx on) from the slave board.
   //This will find what the digit in the 100s place is and return true if the raw value was
