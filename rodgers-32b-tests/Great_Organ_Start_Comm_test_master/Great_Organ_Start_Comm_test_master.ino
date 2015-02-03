@@ -40,12 +40,12 @@ void queryKeyboard(int slaveAddress, int midiChannel)
     Serial.print(incomingKeyData);
     Serial.println(" from the slave board!");
     //take incomingKeyData and send the right info to the MIDI port
-    rawDataToMidi(midiChannel, incomingKeyData);
+    rawDataToMidi(incomingKeyData, midiChannel);
   }
 }
 
 //takes the incomingKeyData and sends the correct information to the MIDI port
-void rawDataToMidi(int midiChannel, int rawKeyValue) 
+void rawDataToMidi(int rawKeyValue, int midiChannel) 
 {
   // Set up MIDI serial commands.
   // The last number is the channel number. If you wanted to send a channel 2 note on command,
