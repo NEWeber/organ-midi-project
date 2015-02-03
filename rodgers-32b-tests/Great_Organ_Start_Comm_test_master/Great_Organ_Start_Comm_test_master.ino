@@ -1,3 +1,6 @@
+// Code for the master board. It requests raw key pressed data from the slave boards
+// interprets it and then sends it to the MIDI port.
+
 #include <Wire.h>
 
 //MIDI baud rate
