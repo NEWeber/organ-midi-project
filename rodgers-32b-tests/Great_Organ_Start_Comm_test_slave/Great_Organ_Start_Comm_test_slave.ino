@@ -112,7 +112,7 @@ void setup()
   //Start wire transmission ability and assign this slave board to the address 1.
   Wire.begin(1);
   //When the master board asks for a transmission, run the getPressedNotes function
-  Wire.onRequest(getPressedNotes);  
+  Wire.onRequest(requestEvent);  
   Serial.begin(9600);
 }
 
@@ -156,14 +156,13 @@ void noteOff(int noteNum)
 }
 
 //This transmits the pressed notes to the master board  
-void getPressedNotes() 
+void requestEvent() 
 {
-  //keeps loop going
-  if (queue.isEmpty()) {
-    return;
+  //if there's something in the queue, send it to the master board
+  if (!queue.isEmpty()) {
+    Serial.println("sending notes");
+    Wire.write(queue.dequeue());
   }
-  Serial.println("sending notes");
-  Wire.write(queue.dequeue());
 }  
 
 
