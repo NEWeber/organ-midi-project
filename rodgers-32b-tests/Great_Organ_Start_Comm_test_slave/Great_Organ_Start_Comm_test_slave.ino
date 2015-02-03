@@ -144,6 +144,7 @@ void noteOff(int noteNum)
 //This transmits the pressed notes to the master board  
 void requestEvent() 
 {
+  Serial.println("master is requesting notes, in requestEvent");
   //if there's something in the queue, send it to the master board
   if (!queue.isEmpty()) {
     Serial.println("sending notes");
