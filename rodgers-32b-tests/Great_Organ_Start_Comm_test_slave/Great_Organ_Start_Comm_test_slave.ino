@@ -95,18 +95,19 @@ void setup()
 
   for(int i = 0; i < numKeys; i++)
   {
-      keyPressed[i] = false;
-      keyToMidiMap[i] = note;
-      note++;
+    keyPressed[i] = false;
+    keyToMidiMap[i] = note;
+    note++;
   }
   
   //go through all the input pins for the great notes and set them to INPUT_PULLUP, so when it connects to ground it will trigger
-  for (int i = 0; i < numKeys; i++) {
+  for (int i = 0; i < numKeys; i++) 
+  {
     pinMode(greatNotes[i], INPUT_PULLUP);
   }
   //Start wire transmission ability and assign this slave board to the address 1.
   Wire.begin(1);
-  //When the master board asks for a transmission, run the getPressedNotes function
+  //When the master board asks for a transmission, run the requestEvent function
   Wire.onRequest(requestEvent);  
   Serial.begin(9600);
 }
@@ -155,7 +156,8 @@ void requestEvent()
 {
   Serial.println("master is requesting notes, in requestEvent");
   //if there's something in the queue, send it to the master board
-  if (!queue.isEmpty()) {
+  if (!queue.isEmpty()) 
+  {
     Serial.println("sending notes");
     Wire.write(queue.dequeue());
   }
