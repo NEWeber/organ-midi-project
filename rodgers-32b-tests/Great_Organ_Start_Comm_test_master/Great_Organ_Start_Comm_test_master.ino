@@ -49,8 +49,8 @@ void queryKeyboard(int slaveAddress, int midiChannel) {
 void rawDataToMidi(int midiChannel, int rawKeyValue) 
 {
   // Set up MIDI serial commands.
-  // The last number is the channel number. (If you wanted to send a channel 2 note on command,
-  // it would be 0x91 (and the off command should be changed as well). Remember to count from 0.
+  // The last number is the channel number. If you wanted to send a channel 2 note on command,
+  // it would be 0x91 (and the off command would be changed as well). Remember to count from 0.
   int noteOnCmd = ((0x90) + (midiChannel - 1));
   int noteOffCmd = ((0x80) + (midiChannel - 1));
   const int noteVelocity = 127;
