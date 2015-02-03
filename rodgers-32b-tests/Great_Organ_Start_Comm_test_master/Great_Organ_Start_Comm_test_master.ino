@@ -18,6 +18,7 @@ void loop()
 {
   //Output on MIDI channel 1 the results of querying the slave keyboard set to wire address one
   queryKeyboard(1, 1);
+  // @todo: add the other keyboards here when they're ready
   //play with delay value to get desired communication experience.
   delay(5);
 }
