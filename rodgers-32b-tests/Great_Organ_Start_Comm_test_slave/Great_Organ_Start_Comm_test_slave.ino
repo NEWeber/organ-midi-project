@@ -1,25 +1,11 @@
 #include <QueueArray.h>
 #include <Wire.h>
-
-// last number is the channel number. i.e. if you want to change this to channel 2,
-// the NOTE_ON_CMD should be set to 0x91 and the off command should be changed as well.
-// Great Keyboard outputs to MIDI channel 1.
-#define NOTE_ON_CMD 0x90
-#define NOTE_OFF_CMD 0x80
-#define NOTE_VELOCITY 127
-
-//MIDI baud rate
-#define SERIAL_RATE 31250
-
 // this decides what note the leftmost key will sound
-#define LOWEST_NOTE 36
-
+const int lowestNote = 36;
 // how many keys
-#define NUM_KEYS 61
+const int numKeys = 61;
 
-//byte pressStateLower[NUM_KEYS] = {0};
-
-// @todo: generate this with an object constructor
+// @todo: generate this with a constructor
 const int c2Pin = A0;  
 const int c2SharpPin = A1;
 const int d2Pin = A2;
@@ -85,10 +71,10 @@ const int c7Pin = 12;
 
 
 // @todo: generate this with a constructor
-const int greatNotes[NUM_KEYS] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f2Pin, f2SharpPin, g2Pin, g2SharpPin, a2Pin, a2SharpPin, b2Pin, c3Pin, c3SharpPin, d3Pin, d3SharpPin, e3Pin, f3Pin, f3SharpPin, g3Pin, g3SharpPin, a3Pin, a3SharpPin, b3Pin, c4Pin, c4SharpPin, d4Pin, d4SharpPin, e4Pin, f4Pin, f4SharpPin, g4Pin, g4SharpPin, a4Pin, a4SharpPin, b4Pin, c5Pin, c5SharpPin, d5Pin, d5SharpPin, e5Pin, f5Pin, f5SharpPin, g5Pin, g5SharpPin, a5Pin, a5SharpPin, b5Pin, c6Pin, c6SharpPin, d6Pin, d6SharpPin, e6Pin, f6Pin, f6SharpPin, g6Pin, g6SharpPin, a6Pin, a6SharpPin, b6Pin, c7Pin};
+const int greatNotes[numKeys] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f2Pin, f2SharpPin, g2Pin, g2SharpPin, a2Pin, a2SharpPin, b2Pin, c3Pin, c3SharpPin, d3Pin, d3SharpPin, e3Pin, f3Pin, f3SharpPin, g3Pin, g3SharpPin, a3Pin, a3SharpPin, b3Pin, c4Pin, c4SharpPin, d4Pin, d4SharpPin, e4Pin, f4Pin, f4SharpPin, g4Pin, g4SharpPin, a4Pin, a4SharpPin, b4Pin, c5Pin, c5SharpPin, d5Pin, d5SharpPin, e5Pin, f5Pin, f5SharpPin, g5Pin, g5SharpPin, a5Pin, a5SharpPin, b5Pin, c6Pin, c6SharpPin, d6Pin, d6SharpPin, e6Pin, f6Pin, f6SharpPin, g6Pin, g6SharpPin, a6Pin, a6SharpPin, b6Pin, c7Pin};
 
-boolean keyPressed[NUM_KEYS];
-byte keyToMidiMap[NUM_KEYS];
+boolean keyPressed[numKeys];
+byte keyToMidiMap[numKeys];
 
 //start the FIFO array with the QueueArray Library to keep track of the data to transmit to the master board.
 QueueArray <int> queue;
@@ -96,9 +82,9 @@ QueueArray <int> queue;
 
 void setup()
 {
-  int note = LOWEST_NOTE;
+  int note = lowestNote;
 
-  for(int i = 0; i < NUM_KEYS; i++)
+  for(int i = 0; i < numKeys; i++)
   {
       keyPressed[i] = false;
       keyToMidiMap[i] = note;
@@ -106,7 +92,7 @@ void setup()
   }
   
   //go through all the input pins for the great notes and set them to INPUT_PULLUP, so when it connects to ground it will trigger
-  for (int i = 0; i < NUM_KEYS; i++) {
+  for (int i = 0; i < numKeys; i++) {
     pinMode(greatNotes[i], INPUT_PULLUP);
   }
   //Start wire transmission ability and assign this slave board to the address 1.
@@ -119,7 +105,7 @@ void setup()
 
 void loop()
 {
-  for (int noteCounter = 0; noteCounter < NUM_KEYS; noteCounter++) {
+  for (int noteCounter = 0; noteCounter < numKeys; noteCounter++) {
     //if the key has been pressed and it was not pressed before, send the note on message and set keyPressed to true
     if ((digitalRead(greatNotes[noteCounter]) == LOW) && (keyPressed[noteCounter] == false))
     {
