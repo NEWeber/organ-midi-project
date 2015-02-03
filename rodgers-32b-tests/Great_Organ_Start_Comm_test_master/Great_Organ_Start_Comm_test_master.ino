@@ -16,7 +16,7 @@ void setup()
 
 void loop()
 {
-  //Output on MIDI channel 1 the results of querying the slave keyboard set to wire address one
+  //Query slave at address 1 and output results to MIDI channel 1
   queryKeyboard(1, 1);
   // @todo: add the other keyboards here when they're ready
   //play with delay value to get desired communication experience.
@@ -24,9 +24,9 @@ void loop()
 }
 
 //queryKeyboard takes what slave address you want to query and 
-// what MIDI channel you want to send the query to. 
-void queryKeyboard(int midiChannel, int slaveAddress) {
- //send request for two bytes to the address set in slaveAddress
+// what MIDI channel you want to send results of the query to. 
+void queryKeyboard(int slaveAddress, int midiChannel) {
+  //send request for two bytes to the address set in slaveAddress
   Wire.requestFrom(slaveAddress, 2);
   if(Wire.available() == 2) {
     //read incoming value and assign it to incomingKeyData
