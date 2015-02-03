@@ -22,7 +22,7 @@ void loop()
   delay(5);
 }
   
-//Find if a note is on or off: we're getting 1xx and 2xx from the slave board.
+//Find if a note is on or off: we're getting xx (note xx off) and 1xx (note xx on) from the slave board.
 //This will find what the digit in the 100s place is and return true if it's
 //1xx (on) and false if it's xx (off)
 boolean findOnOrOff(int incomingValue)
