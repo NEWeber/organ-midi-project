@@ -1,3 +1,6 @@
+#include <QueueArray.h>
+#include <Wire.h>
+
 // last number is the channel number. i.e. if you want to change this to channel 2,
 // the NOTE_ON_CMD should be set to 0x91 and the off command should be changed as well.
 // Great Keyboard outputs to MIDI channel 1.
@@ -14,7 +17,7 @@
 // how many keys
 #define NUM_KEYS 61
 
-byte pressStateLower[NUM_KEYS] = {0};
+//byte pressStateLower[NUM_KEYS] = {0};
 
 // @todo: generate this with an object constructor
 const int c2Pin = A0;  
@@ -65,6 +68,7 @@ const int g5SharpPin = 25;
 const int a5Pin = 24;
 const int a5SharpPin = 23;
 const int b5Pin = 22;
+//note the change here
 const int c6Pin = 15;  
 const int c6SharpPin = 14;
 const int d6Pin = 2;
@@ -86,6 +90,10 @@ const int greatNotes[NUM_KEYS] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f
 boolean keyPressed[NUM_KEYS];
 byte keyToMidiMap[NUM_KEYS];
 
+//start the FIFO array with the QueueArray Library to keep track of the data to transmit to the master board.
+QueueArray <int> queue;
+
+
 void setup()
 {
   int note = LOWEST_NOTE;
@@ -95,15 +103,17 @@ void setup()
       keyPressed[i] = false;
       keyToMidiMap[i] = note;
       note++;
-   
   }
+  
   //go through all the input pins for the great notes and set them to INPUT_PULLUP, so when it connects to ground it will trigger
   for (int i = 0; i < NUM_KEYS; i++) {
     pinMode(greatNotes[i], INPUT_PULLUP);
   }
-  
-  
-  Serial.begin(SERIAL_RATE);
+  //Start wire transmission ability and assign this slave board to the address 1.
+  Wire.begin(1);
+  //When the master board asks for a transmission, run the getPressedNotes function
+  Wire.onRequest(getPressedNotes);  
+  Serial.begin(9600);
 }
 
 
@@ -113,12 +123,14 @@ void loop()
     //if the key has been pressed and it was not pressed before, send the note on message and set keyPressed to true
     if ((digitalRead(greatNotes[noteCounter]) == LOW) && (keyPressed[noteCounter] == false))
     {
+      Serial.println("A note was pressed!");
       keyPressed[noteCounter] = true;
       noteOn(noteCounter);
     }
     //if the key is released and it was held before, send note off and set keyPressed to false
     else if ((digitalRead(greatNotes[noteCounter]) == HIGH) && (keyPressed[noteCounter] == true))
     {
+      Serial.println("A note was released.");
       keyPressed[noteCounter] = false;
       noteOff(noteCounter);
     }
@@ -129,15 +141,29 @@ delay(10);
 
 void noteOn(int noteNum)
 {
-  Serial.write(NOTE_ON_CMD);
-  Serial.write(keyToMidiMap[noteNum]);
-  Serial.write(NOTE_VELOCITY);
+  int sendThis = 100 + (keyToMidiMap[noteNum]);
+  queue.enqueue(sendThis);
+  Serial.println(sendThis);
+  //Serial.println(queue.front());
 }
 
 void noteOff(int noteNum)
 {
-  Serial.write(NOTE_OFF_CMD);
-  Serial.write(keyToMidiMap[noteNum]);
-  Serial.write(NOTE_VELOCITY);
+  int sendThis = (keyToMidiMap[noteNum]);
+  queue.enqueue(sendThis);
+  Serial.println(sendThis);
+  //Serial.println(queue.front());
 }
+
+//This transmits the pressed notes to the master board  
+void getPressedNotes() 
+{
+  //keeps loop going
+  if (queue.isEmpty()) {
+    return;
+  }
+  Serial.println("sending notes");
+  Wire.write(queue.dequeue());
+}  
+
 
