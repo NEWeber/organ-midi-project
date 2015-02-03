@@ -1,17 +1,14 @@
 #include <Wire.h>
 
-#define NOTE_ON_CMD 0x90
-#define NOTE_OFF_CMD 0x80
-#define NOTE_VELOCITY 127
 //MIDI baud rate
-#define SERIAL_RATE 31250
+const int midiSerialRate = 31250;
 
 void setup()
 {
   
   Wire.begin();
   //Send out MIDI signals out of Serial1, can switch this to serial after done debugging
-  Serial1.begin(SERIAL_RATE);
+  Serial1.begin(midiSerialRate);
   //Set up Serial out to send debugging messages to the computer.
   Serial.begin(9600);
   
@@ -47,6 +44,7 @@ void rawDataToMidi(int midiChannel, int rawKeyValue)
 {
   int noteOnCmd = ((0x90) + (midiChannel - 1));
   int noteOffCmd = ((0x80) + (midiChannel - 1));
+  const int noteVelocity = 127;
   if (isItOn(rawKeyValue)) {
       //note on debugging info (can be deleted when done)
       Serial.print("Sending key number ");
@@ -56,7 +54,7 @@ void rawDataToMidi(int midiChannel, int rawKeyValue)
       //NOTE: It's going to Serial1, not Serial
       Serial1.write(noteOnCmd);
       Serial1.write(findNoteNumber(rawKeyValue));
-      Serial1.write(NOTE_VELOCITY);
+      Serial1.write(noteVelocity);
     }
     else {
       //note off debugging info (can be deleted when done)
@@ -67,7 +65,7 @@ void rawDataToMidi(int midiChannel, int rawKeyValue)
       //NOTE: It's going to Serial1, not Serial
       Serial1.write(noteOnCmd);
       Serial1.write(findNoteNumber(rawKeyValue));
-      Serial1.write(NOTE_VELOCITY);
+      Serial1.write(noteVelocity);
     }
   
   //Find if a note is on or off: we're getting xx (note xx off) and 1xx (note xx on) from the slave board.
