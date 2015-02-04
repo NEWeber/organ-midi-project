@@ -22,7 +22,7 @@ void loop()
   //Rückpositiv outputs to MIDI channel 2
   //Swell outputs to MIDI channel 3
   //play with delay value to get desired communication experience.
-  delay(5);
+  delay(1500);
 }
 
 //queryKeyboard takes what slave address you want to query and 
@@ -77,29 +77,30 @@ void rawDataToMidi(int rawKeyValue, int midiChannel)
     Serial1.write(findNoteNumber(rawKeyValue));
     Serial1.write(noteVelocity);
   }
+}
   
-  //Find if a note is on or off: we're getting xx (note xx off) and 1xx (note xx on) from the slave board.
-  //This will find what the digit in the 100s place is and return true if the raw value was
-  //1xx (on) and false if it's xx (off)
-  boolean isItOn(int incomingValue)
+//Find if a note is on or off: we're getting xx (note xx off) and 1xx (note xx on) from the slave board.
+//This will find what the digit in the 100s place is and return true if the raw value was
+//1xx (on) and false if it's xx (off)
+boolean isItOn(int incomingValue)
+{
+  int noteNumber = findNoteNumber(incomingValue);
+  int OnOrOff = incomingValue - noteNumber;
+  if (OnOrOff == 100) 
   {
-    int noteNumber = findNoteNumber(incomingValue);
-    int OnOrOff = incomingValue - noteNumber;
-    if (OnOrOff == 100) 
-    {
-      return true;
-    }
-    else  
-    {
-      return false;
-    }
+    return true;
   }
-  
-  // This will just return the note number which is the tens and ones position
-  // of the two or three digit number that we're getting from the slave board.
-  int findNoteNumber(int incomingValue)
+  else  
   {
-    int noteNumber = incomingValue % 100;
-    return noteNumber;
+    return false;
   }
 }
+
+// This will just return the note number which is the tens and ones position
+// of the two or three digit number that we're getting from the slave board.
+int findNoteNumber(int incomingValue)
+{
+  int noteNumber = incomingValue % 100;
+  return noteNumber;
+}
+
