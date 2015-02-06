@@ -86,7 +86,7 @@ boolean keyPressed[numKeys];
 byte keyToMidiMap[numKeys];
 
 //start the FIFO array with the QueueArray Library to keep track of the data to transmit to the master board.
-QueueArray <int> queue;
+QueueArray <byte> queue;
 
 
 void setup()
@@ -115,7 +115,6 @@ void setup()
 
 void loop()
 {
-  Serial.println("In the loop");
   for (int noteCounter = 0; noteCounter < numKeys; noteCounter++) {
     //if the key has been pressed and it was not pressed before, send the note on message and set keyPressed to true
     if ((digitalRead(greatNotes[noteCounter]) == LOW) && (keyPressed[noteCounter] == false))
@@ -133,12 +132,12 @@ void loop()
     }
   }
 
-delay(10);
+delay(70);
 }
 
 void noteOn(int noteNum)
 {
-  int sendThis = 100 + (keyToMidiMap[noteNum]);
+  byte sendThis = 100 + (keyToMidiMap[noteNum]);
   queue.enqueue(sendThis);
   Serial.println(sendThis);
   //Serial.println(queue.front());
@@ -146,7 +145,7 @@ void noteOn(int noteNum)
 
 void noteOff(int noteNum)
 {
-  int sendThis = (keyToMidiMap[noteNum]);
+  byte sendThis = (keyToMidiMap[noteNum]);
   queue.enqueue(sendThis);
   Serial.println(sendThis);
   //Serial.println(queue.front());
