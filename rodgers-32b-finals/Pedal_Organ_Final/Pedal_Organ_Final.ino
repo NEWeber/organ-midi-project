@@ -166,7 +166,6 @@ void rawDataToMidi(int rawKeyValue, int midiChannel)
   // it would be 0x91 (and the off command would be changed as well). Remember to count from 0.
   int noteOnCmd = ((0x90) + (midiChannel - 1));
   int noteOffCmd = ((0x80) + (midiChannel - 1));
-  const int noteVelocity = 127;
   if (isItOn(rawKeyValue)) 
   {
     //note on debugging info (can be deleted when done)
@@ -177,7 +176,7 @@ void rawDataToMidi(int rawKeyValue, int midiChannel)
     //NOTE: It's going to Serial1, not Serial
     Serial1.write(noteOnCmd);
     Serial1.write(findNoteNumber(rawKeyValue));
-    Serial1.write(noteVelocity);
+    Serial1.write(NOTE_VELOCITY);
     }
   else 
   {
@@ -189,7 +188,7 @@ void rawDataToMidi(int rawKeyValue, int midiChannel)
     //NOTE: It's going to Serial1, not Serial
     Serial1.write(noteOnCmd);
     Serial1.write(findNoteNumber(rawKeyValue));
-    Serial1.write(noteVelocity);
+    Serial1.write(NOTE_VELOCITY);
   }
 }
   
