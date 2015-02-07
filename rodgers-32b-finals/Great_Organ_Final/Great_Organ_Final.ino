@@ -1,25 +1,21 @@
+// Code for the Great keyboard. Each key wire is plugged into pins on an ATMEGA. 
+// All the input pins are set to INPUT_PULLUP so that they will normally read HIGH.
+// When a key is pressed, it connects the pin to ground so that it will read LOW.
+// This code is for a slave board, it sends the notes that have been pressed and released.
+// If a key is newly pressed, it will queue a number, 1xx (xx being the note number) to be
+// sent. If newly released, it will queue xx to be sent. (Ex: if key 36 (c2) is pressed, it will 
+// queue 136 to be sent to the master board.) The master board then takes those raw numbers 
+// and turns them into MIDI signals and sends them to the MIDI port.
+
 #include <QueueArray.h>
 #include <Wire.h>
-
-// last number is the channel number. i.e. if you want to change this to channel 2,
-// the NOTE_ON_CMD should be set to 0x91 and the off command should be changed as well.
-// Great Keyboard outputs to MIDI channel 1.
-#define NOTE_ON_CMD 0x90
-#define NOTE_OFF_CMD 0x80
-#define NOTE_VELOCITY 127
-
-//MIDI baud rate
-#define SERIAL_RATE 31250
-
+volatile byte numNotesToSend;
 // this decides what note the leftmost key will sound
-#define LOWEST_NOTE 36
-
+const int lowestNote = 36;
 // how many keys
-#define NUM_KEYS 61
+const int numKeys = 61;
 
-//byte pressStateLower[NUM_KEYS] = {0};
-
-// @todo: generate this with an object constructor
+// @todo: generate this with a constructor
 const int c2Pin = A0;  
 const int c2SharpPin = A1;
 const int d2Pin = A2;
@@ -85,85 +81,95 @@ const int c7Pin = 12;
 
 
 // @todo: generate this with a constructor
-const int greatNotes[NUM_KEYS] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f2Pin, f2SharpPin, g2Pin, g2SharpPin, a2Pin, a2SharpPin, b2Pin, c3Pin, c3SharpPin, d3Pin, d3SharpPin, e3Pin, f3Pin, f3SharpPin, g3Pin, g3SharpPin, a3Pin, a3SharpPin, b3Pin, c4Pin, c4SharpPin, d4Pin, d4SharpPin, e4Pin, f4Pin, f4SharpPin, g4Pin, g4SharpPin, a4Pin, a4SharpPin, b4Pin, c5Pin, c5SharpPin, d5Pin, d5SharpPin, e5Pin, f5Pin, f5SharpPin, g5Pin, g5SharpPin, a5Pin, a5SharpPin, b5Pin, c6Pin, c6SharpPin, d6Pin, d6SharpPin, e6Pin, f6Pin, f6SharpPin, g6Pin, g6SharpPin, a6Pin, a6SharpPin, b6Pin, c7Pin};
+const int greatNotes[numKeys] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f2Pin, f2SharpPin, g2Pin, g2SharpPin, a2Pin, a2SharpPin, b2Pin, c3Pin, c3SharpPin, d3Pin, d3SharpPin, e3Pin, f3Pin, f3SharpPin, g3Pin, g3SharpPin, a3Pin, a3SharpPin, b3Pin, c4Pin, c4SharpPin, d4Pin, d4SharpPin, e4Pin, f4Pin, f4SharpPin, g4Pin, g4SharpPin, a4Pin, a4SharpPin, b4Pin, c5Pin, c5SharpPin, d5Pin, d5SharpPin, e5Pin, f5Pin, f5SharpPin, g5Pin, g5SharpPin, a5Pin, a5SharpPin, b5Pin, c6Pin, c6SharpPin, d6Pin, d6SharpPin, e6Pin, f6Pin, f6SharpPin, g6Pin, g6SharpPin, a6Pin, a6SharpPin, b6Pin, c7Pin};
 
-boolean keyPressed[NUM_KEYS];
-byte keyToMidiMap[NUM_KEYS];
+boolean keyPressed[numKeys];
+byte keyToMidiMap[numKeys];
 
 //start the FIFO array with the QueueArray Library to keep track of the data to transmit to the master board.
-QueueArray <int> queue;
+QueueArray <byte> queue;
 
 
 void setup()
 {
-  int note = LOWEST_NOTE;
+  int note = lowestNote;
 
-  for(int i = 0; i < NUM_KEYS; i++)
+  for(int i = 0; i < numKeys; i++)
   {
-      keyPressed[i] = false;
-      keyToMidiMap[i] = note;
-      note++;
+    keyPressed[i] = false;
+    keyToMidiMap[i] = note;
+    note++;
   }
   
   //go through all the input pins for the great notes and set them to INPUT_PULLUP, so when it connects to ground it will trigger
-  for (int i = 0; i < NUM_KEYS; i++) {
+  for (int i = 0; i < numKeys; i++) 
+  {
     pinMode(greatNotes[i], INPUT_PULLUP);
   }
   //Start wire transmission ability and assign this slave board to the address 1.
   Wire.begin(1);
-  //When the master board asks for a transmission, run the getPressedNotes function
-  Wire.onRequest(getPressedNotes);  
-  Serial.begin(9600);
+  //When the master board asks for a transmission, run the requestEvent function
+  Wire.onRequest(requestEvent);  
+  Wire.onReceive (receiveEvent);
 }
 
 
 void loop()
 {
-  for (int noteCounter = 0; noteCounter < NUM_KEYS; noteCounter++) {
+  for (int noteCounter = 0; noteCounter < numKeys; noteCounter++) {
     //if the key has been pressed and it was not pressed before, send the note on message and set keyPressed to true
     if ((digitalRead(greatNotes[noteCounter]) == LOW) && (keyPressed[noteCounter] == false))
     {
-      Serial.println("A note was pressed!");
       keyPressed[noteCounter] = true;
       noteOn(noteCounter);
     }
     //if the key is released and it was held before, send note off and set keyPressed to false
     else if ((digitalRead(greatNotes[noteCounter]) == HIGH) && (keyPressed[noteCounter] == true))
     {
-      Serial.println("A note was released.");
       keyPressed[noteCounter] = false;
       noteOff(noteCounter);
     }
   }
-
-delay(10);
 }
 
 void noteOn(int noteNum)
 {
-  int sendThis = 100 + (keyToMidiMap[noteNum]);
+  byte sendThis = 100 + (keyToMidiMap[noteNum]);
   queue.enqueue(sendThis);
-  Serial.println(sendThis);
-  //Serial.println(queue.front());
 }
 
 void noteOff(int noteNum)
 {
-  int sendThis = (keyToMidiMap[noteNum]);
+  byte sendThis = (keyToMidiMap[noteNum]);
   queue.enqueue(sendThis);
-  Serial.println(sendThis);
-  //Serial.println(queue.front());
 }
 
+volatile byte command;
+volatile bool wantLength;
+
+// called by interrupt service routine when incoming data arrives
+void receiveEvent (int howMany)
+ {
+ command = Wire.read (); 
+ wantLength = true;
+ }  // end of receiveEvent
+
 //This transmits the pressed notes to the master board  
-void getPressedNotes() 
+void requestEvent() 
 {
-  //keeps loop going
-  if (queue.isEmpty()) {
-    return;
-  }
-  Serial.println("sending notes");
-  Wire.write(queue.dequeue());
+   if (wantLength)
+   {
+     numNotesToSend = queue.count();
+     Wire.write ((byte) (numNotesToSend & 7));
+     wantLength = false;
+     return;
+   }
+  byte myResponse [numNotesToSend];
+  for(int i = 0; i < numNotesToSend; i++)
+  {
+    myResponse[i] = queue.dequeue();
+  } 
+ Wire.write ((const byte *) myResponse, numNotesToSend & 7); 
 }  
 
 
