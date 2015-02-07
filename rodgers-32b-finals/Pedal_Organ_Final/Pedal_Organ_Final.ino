@@ -155,6 +155,7 @@ void queryKeyboard(int slaveAddress, int midiChannel)
   for (int i = 0; i < count; i++) 
   {
     rawDataToMidi(responseBuffer[i], midiChannel);
+    delay(.5);
   }
 }
 
@@ -186,7 +187,7 @@ void rawDataToMidi(int rawKeyValue, int midiChannel)
     Serial.println(" OFF to MIDI.");
     //Sends the required note off information to the MIDI port
     //NOTE: It's going to Serial1, not Serial
-    Serial1.write(noteOnCmd);
+    Serial1.write(noteOffCmd);
     Serial1.write(findNoteNumber(rawKeyValue));
     Serial1.write(NOTE_VELOCITY);
   }
