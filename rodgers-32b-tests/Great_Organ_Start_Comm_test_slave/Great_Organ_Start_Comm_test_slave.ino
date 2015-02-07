@@ -154,8 +154,6 @@ void receiveEvent (int howMany)
  wantLength = true;
  }  // end of receiveEvent
 
-byte myResponse [count];
-
 //This transmits the pressed notes to the master board  
 void requestEvent() 
 {

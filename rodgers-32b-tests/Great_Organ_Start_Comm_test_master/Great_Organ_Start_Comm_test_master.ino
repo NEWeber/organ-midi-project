@@ -22,6 +22,7 @@ void loop()
   //Rückpositiv outputs to MIDI channel 2
   //Swell outputs to MIDI channel 3
   //play with delay value to get desired communication experience.
+  delay(750);
 }
 
 char responseBuffer [30];
