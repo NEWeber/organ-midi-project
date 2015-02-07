@@ -16,21 +16,18 @@ void setup()
 
 void loop()
 {
-  Serial.println("In the master loop");
   //Query slave at address 1 and output results to MIDI channel 1. (Great Keyboard outputs to MIDI channel 1.)
   queryKeyboard(1, 1);
   // @todo: add the other keyboards here when they're ready
   //Rückpositiv outputs to MIDI channel 2
   //Swell outputs to MIDI channel 3
   //play with delay value to get desired communication experience.
-  delay(100);
 }
 
 //queryKeyboard takes what slave address you want to query and 
 // what MIDI channel you want to send results of the query to. 
 void queryKeyboard(int slaveAddress, int midiChannel) 
 {
-  Serial.println("In the queryKeyboard function.");
   //send request for one byte to the address set in slaveAddress
   if (Wire.requestFrom(slaveAddress, 1) == 1) 
   { 

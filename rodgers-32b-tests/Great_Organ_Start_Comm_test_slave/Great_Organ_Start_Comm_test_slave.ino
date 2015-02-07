@@ -129,8 +129,6 @@ void loop()
       noteOff(noteCounter);
     }
   }
-
-delay(70);
 }
 
 void noteOn(int noteNum)
