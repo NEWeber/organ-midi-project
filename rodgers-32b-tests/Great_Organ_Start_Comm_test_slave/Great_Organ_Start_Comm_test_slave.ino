@@ -9,7 +9,7 @@
 
 #include <QueueArray.h>
 #include <Wire.h>
-volatile byte count;
+volatile byte numNotesToSend;
 // this decides what note the leftmost key will sound
 const int lowestNote = 36;
 // how many keys
@@ -159,17 +159,17 @@ void requestEvent()
 {
    if (wantLength)
    {
-   count = queue.count();
-   Wire.write ((byte) (count & 7));
-   wantLength = false;
-   return;
+     numNotesToSend = queue.count();
+     Wire.write ((byte) (numNotesToSend & 7));
+     wantLength = false;
+     return;
    }
-  byte myResponse [count];
-  for(int i = 0; i < count; i++)
+  byte myResponse [numNotesToSend];
+  for(int i = 0; i < numNotesToSend; i++)
   {
     myResponse[i] = queue.dequeue();
   } 
- Wire.write ((const byte *) myResponse, count & 7); 
+ Wire.write ((const byte *) myResponse, numNotesToSend & 7); 
 }  
 
 

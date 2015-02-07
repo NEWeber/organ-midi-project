@@ -22,10 +22,9 @@ void loop()
   //Rückpositiv outputs to MIDI channel 2
   //Swell outputs to MIDI channel 3
   //play with delay value to get desired communication experience.
-  delay(750);
 }
 
-char responseBuffer [30];
+byte responseBuffer [30];
 
 //queryKeyboard takes what slave address you want to query and 
 // what MIDI channel you want to send results of the query to. 
@@ -44,9 +43,9 @@ void queryKeyboard(int slaveAddress, int midiChannel)
   }
 
   byte count = Wire.read ();
-  Serial.print (F("Got size of "));
-  Serial.print (int (count));
-  Serial.println (F(" bytes."));
+  //Serial.print (F("Got size of "));
+  //Serial.print (int (count));
+  //Serial.println (F(" bytes."));
   // don't bother if nothing to read
   if (count == 0)
     return;
@@ -58,11 +57,10 @@ void queryKeyboard(int slaveAddress, int midiChannel)
     }
   
   for (int i = 0; i < count; i++)
+  {
     responseBuffer [i] = Wire.read ();
-  //send request for one byte to the address set in slaveAddress
-  int thisManyNotes = sizeof(responseBuffer) / sizeof(responseBuffer[0]);
-  Serial.println(thisManyNotes);
-  for (int i = 0; i < thisManyNotes; i++) 
+  }
+  for (int i = 0; i < count; i++) 
   {
     rawDataToMidi(responseBuffer[i], midiChannel);
   }
