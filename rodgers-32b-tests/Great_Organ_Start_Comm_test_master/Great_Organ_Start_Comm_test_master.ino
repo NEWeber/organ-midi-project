@@ -37,7 +37,7 @@ void queryKeyboard(int slaveAddress, int midiChannel)
   
   memset (responseBuffer, 0, sizeof responseBuffer);
   
-  if (!Wire.requestFrom (SLAVE_ADDRESS, sizeof responseBuffer))
+  if (!Wire.requestFrom (slaveAddress, sizeof responseBuffer))
   {
     Serial.println (F("No length from slave"));
     return;  
@@ -51,7 +51,7 @@ void queryKeyboard(int slaveAddress, int midiChannel)
   if (count == 0)
     return;
     
-  if (!Wire.requestFrom (SLAVE_ADDRESS, size_t (count)))
+  if (!Wire.requestFrom (slaveAddress, size_t (count)))
     {
     Serial.println (F("No data from slave"));
     return;  
