@@ -24,21 +24,46 @@ void loop()
   //play with delay value to get desired communication experience.
 }
 
+char responseBuffer [30];
+
 //queryKeyboard takes what slave address you want to query and 
 // what MIDI channel you want to send results of the query to. 
 void queryKeyboard(int slaveAddress, int midiChannel) 
 {
+  Wire.beginTransmission (slaveAddress);
+  Wire.write (66);  // do something
+  Wire.endTransmission ();
+  
+  memset (responseBuffer, 0, sizeof responseBuffer);
+  
+  if (!Wire.requestFrom (SLAVE_ADDRESS, sizeof responseBuffer))
+  {
+    Serial.println (F("No length from slave"));
+    return;  
+  }
+
+  byte count = Wire.read ();
+  Serial.print (F("Got size of "));
+  Serial.print (int (count));
+  Serial.println (F(" bytes."));
+  // don't bother if nothing to read
+  if (count == 0)
+    return;
+    
+  if (!Wire.requestFrom (SLAVE_ADDRESS, size_t (count)))
+    {
+    Serial.println (F("No data from slave"));
+    return;  
+    }
+  
+  for (int i = 0; i < count; i++)
+    responseBuffer [i] = Wire.read ();
   //send request for one byte to the address set in slaveAddress
-  if (Wire.requestFrom(slaveAddress, 1) == 1) 
-  { 
-    //read incoming value and assign it to incomingKeyData
-    int incomingKeyData = Wire.read();
-    //debugging info, can be deleted when done
-    Serial.print("Just got ");
-    Serial.print(incomingKeyData);
-    Serial.println(" from the slave board!");
-    //take incomingKeyData and send the right info to the MIDI port
-    rawDataToMidi(incomingKeyData, midiChannel);
+  int thisManyNotes = sizeof(responseBuffer) / sizeof(responseBuffer[0]);
+  Serial.println(thisManyNotes);
+  for (int i = 0; i < thisManyNotes; i++) 
+  {
+    rawDataToMidi(responseBuffer[i], midiChannel);
   }
 }
 
