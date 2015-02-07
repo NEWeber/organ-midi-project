@@ -8,7 +8,7 @@
 #define NOTE_VELOCITY 127
 
 //MIDI baud rate
-#define SERIAL_RATE 31250
+const int midiSerialRate = 31250;
 
 // this decides what note the leftmost key will sound
 #define LOWEST_NOTE 36
@@ -51,7 +51,7 @@ const int f4SharpPin = 52;
 const int g4Pin =  53;
 
 // @todo: generate this with a constructor
-const int greatNotes[NUM_KEYS] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f2Pin, f2SharpPin, g2Pin, g2SharpPin, a2Pin, a2SharpPin, b2Pin, c3Pin, c3SharpPin, d3Pin, d3SharpPin, e3Pin, f3Pin, f3SharpPin, g3Pin, g3SharpPin, a3Pin, a3SharpPin, b3Pin, c4Pin, c4SharpPin, d4Pin, d4SharpPin, e4Pin, f4Pin, f4SharpPin, g4Pin};
+const int pedalNotes[NUM_KEYS] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f2Pin, f2SharpPin, g2Pin, g2SharpPin, a2Pin, a2SharpPin, b2Pin, c3Pin, c3SharpPin, d3Pin, d3SharpPin, e3Pin, f3Pin, f3SharpPin, g3Pin, g3SharpPin, a3Pin, a3SharpPin, b3Pin, c4Pin, c4SharpPin, d4Pin, d4SharpPin, e4Pin, f4Pin, f4SharpPin, g4Pin};
 
 boolean keyPressed[NUM_KEYS];
 byte keyToMidiMap[NUM_KEYS];
@@ -69,11 +69,13 @@ void setup()
   }
   //go through all the input pins for the great notes and set them to INPUT_PULLUP, so when it connects to ground it will trigger
   for (int i = 0; i < NUM_KEYS; i++) {
-    pinMode(greatNotes[i], INPUT_PULLUP);
+    pinMode(pedalNotes[i], INPUT_PULLUP);
   }
   
   Wire.begin();
-  Serial1.begin(SERIAL_RATE);
+  //Send out MIDI signals out of Serial1, can switch this to serial after done debugging
+  Serial1.begin(midiSerialRate);
+  //Set up Serial out to send debugging messages to the computer.
   Serial.begin(9600);
   
 }
@@ -83,20 +85,19 @@ void loop()
 {
   for (int noteCounter = 0; noteCounter < NUM_KEYS; noteCounter++) {
     //if the key has been pressed and it was not pressed before, send the note on message and set keyPressed to true
-    if ((digitalRead(greatNotes[noteCounter]) == LOW) && (keyPressed[noteCounter] == false))
+    if ((digitalRead(pedalNotes[noteCounter]) == LOW) && (keyPressed[noteCounter] == false))
     {
       keyPressed[noteCounter] = true;
       localNoteOn(noteCounter);
     }
     //if the key is released and it was held before, send note off and set keyPressed to false
-    else if ((digitalRead(greatNotes[noteCounter]) == HIGH) && (keyPressed[noteCounter] == true))
+    else if ((digitalRead(pedalNotes[noteCounter]) == HIGH) && (keyPressed[noteCounter] == true))
     {
       keyPressed[noteCounter] = false;
       localNoteOff(noteCounter);
     }
   }
 queryKeyboard(1, 1);
-delay(10);
 }
 
 void localNoteOn(int noteNum)
@@ -115,12 +116,89 @@ void localNoteOff(int noteNum)
   Serial1.write(NOTE_VELOCITY);
 }
 
-//Find if a note is on or off: we're getting 1xx and xx from the slave board.
-//This will find what the digit in the 100s place is and return true if it's
-//1xx (on) and false if it's xx (off)
-boolean findOnOrOff(int incomingValue)
+byte responseBuffer [30];
+
+//queryKeyboard takes what slave address you want to query and 
+// what MIDI channel you want to send results of the query to. 
+void queryKeyboard(int slaveAddress, int midiChannel) 
 {
-  int noteNumber = incomingValue % 100;
+  Wire.beginTransmission (slaveAddress);
+  Wire.write (66);  // do something
+  Wire.endTransmission ();
+  
+  memset (responseBuffer, 0, sizeof responseBuffer);
+  
+  if (!Wire.requestFrom (slaveAddress, sizeof responseBuffer))
+  {
+    Serial.println (F("No length from slave"));
+    return;  
+  }
+
+  byte count = Wire.read ();
+  //Serial.print (F("Got size of "));
+  //Serial.print (int (count));
+  //Serial.println (F(" bytes."));
+  // don't bother if nothing to read
+  if (count == 0)
+    return;
+    
+  if (!Wire.requestFrom (slaveAddress, size_t (count)))
+    {
+    Serial.println (F("No data from slave"));
+    return;  
+    }
+  
+  for (int i = 0; i < count; i++)
+  {
+    responseBuffer [i] = Wire.read ();
+  }
+  for (int i = 0; i < count; i++) 
+  {
+    rawDataToMidi(responseBuffer[i], midiChannel);
+  }
+}
+
+//takes the incomingKeyData and sends the correct information to the MIDI port
+void rawDataToMidi(int rawKeyValue, int midiChannel) 
+{
+  // Set up MIDI serial commands.
+  // The last number is the channel number. If you wanted to send a channel 2 note on command,
+  // it would be 0x91 (and the off command would be changed as well). Remember to count from 0.
+  int noteOnCmd = ((0x90) + (midiChannel - 1));
+  int noteOffCmd = ((0x80) + (midiChannel - 1));
+  const int noteVelocity = 127;
+  if (isItOn(rawKeyValue)) 
+  {
+    //note on debugging info (can be deleted when done)
+    Serial.print("Sending key number ");
+    Serial.print(findNoteNumber(rawKeyValue));
+    Serial.println(" ON to MIDI!");
+    //Sends the required note on information to the MIDI port 
+    //NOTE: It's going to Serial1, not Serial
+    Serial1.write(noteOnCmd);
+    Serial1.write(findNoteNumber(rawKeyValue));
+    Serial1.write(noteVelocity);
+    }
+  else 
+  {
+    //note off debugging info (can be deleted when done)
+    Serial.print("Sending key number ");
+    Serial.print(findNoteNumber(rawKeyValue));
+    Serial.println(" OFF to MIDI.");
+    //Sends the required note off information to the MIDI port
+    //NOTE: It's going to Serial1, not Serial
+    Serial1.write(noteOnCmd);
+    Serial1.write(findNoteNumber(rawKeyValue));
+    Serial1.write(noteVelocity);
+  }
+}
+  
+//Find if a note is on or off: we're getting xx (note xx off) and 1xx (note xx on) from the slave board.
+//This will find what the digit in the 100s place is and return true if the raw value was
+//1xx (on) and false if it's xx (off)
+boolean isItOn(int incomingValue)
+{
+  int noteNumber = findNoteNumber(incomingValue);
   int OnOrOff = incomingValue - noteNumber;
   if (OnOrOff == 100) 
   {
@@ -132,49 +210,10 @@ boolean findOnOrOff(int incomingValue)
   }
 }
 
-//This will just return the note number which is the tens and ones position
+// This will just return the note number which is the tens and ones position
 // of the two or three digit number that we're getting from the slave board.
 int findNoteNumber(int incomingValue)
 {
   int noteNumber = incomingValue % 100;
   return noteNumber;
 }
-
-//queryKeyboard takes what slave address you want to query and 
-// what MIDI channel you want to send the query to. 
-void queryKeyboard(int midiChannel, int slaveAddress) {
-  int noteOnCmd = ((0x90) + (midiChannel - 1));
-  int noteOffCmd = ((0x80) + (midiChannel - 1));
- //send request for two bytes to the address set in slaveAddress
-  Wire.requestFrom(slaveAddress, 2);
-  if(Wire.available() == 2) {
-    int keyOnAndOff = Wire.read();
-    if(keyOnAndOff == 0) {
-    }
-    else {
-      Serial.print("Just got ");
-      Serial.print(keyOnAndOff);
-      Serial.println(" from the slave board!");
-        
-      if (findOnOrOff(keyOnAndOff)) {
-        Serial.print("Sending key number ");
-        Serial.print(findNoteNumber(keyOnAndOff));
-        Serial.println(" ON to MIDI!");
-        Serial1.write(noteOnCmd);
-        Serial1.write(findNoteNumber(keyOnAndOff));
-        Serial1.write(NOTE_VELOCITY);
-        //note on stuff
-      }
-      else {
-        //note off stuff
-        Serial.print("Sending key number ");
-        Serial.print(findNoteNumber(keyOnAndOff));
-        Serial.println(" OFF to MIDI.");
-        Serial1.write(noteOffCmd);
-        Serial1.write(findNoteNumber(keyOnAndOff));
-        Serial1.write(NOTE_VELOCITY);
-      }
-    }
-  }
-}
-
