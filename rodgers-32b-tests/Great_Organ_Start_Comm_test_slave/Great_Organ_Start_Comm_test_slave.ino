@@ -9,6 +9,7 @@
 
 #include <QueueArray.h>
 #include <Wire.h>
+volatile byte count;
 // this decides what note the leftmost key will sound
 const int lowestNote = 36;
 // how many keys
@@ -109,7 +110,7 @@ void setup()
   Wire.begin(1);
   //When the master board asks for a transmission, run the requestEvent function
   Wire.onRequest(requestEvent);  
-  Serial.begin(9600);
+  Wire.onReceive (receiveEvent);
 }
 
 
@@ -135,26 +136,42 @@ void noteOn(int noteNum)
 {
   byte sendThis = 100 + (keyToMidiMap[noteNum]);
   queue.enqueue(sendThis);
-  Serial.println(sendThis);
-  //Serial.println(queue.front());
 }
 
 void noteOff(int noteNum)
 {
   byte sendThis = (keyToMidiMap[noteNum]);
   queue.enqueue(sendThis);
-  Serial.println(sendThis);
-  //Serial.println(queue.front());
 }
+
+volatile byte command;
+volatile bool wantLength;
+
+// called by interrupt service routine when incoming data arrives
+void receiveEvent (int howMany)
+ {
+ command = Wire.read (); 
+ wantLength = true;
+ }  // end of receiveEvent
+
+byte myResponse [count];
 
 //This transmits the pressed notes to the master board  
 void requestEvent() 
 {
-  //if there's something in the queue, send it to the master board
-  if (!queue.isEmpty()) 
+   if (wantLength)
+   {
+   count = queue.count();
+   Wire.write ((byte) (count & 7));
+   wantLength = false;
+   return;
+   }
+  byte myResponse [count];
+  for(int i = 0; i < count; i++)
   {
-    Wire.write(queue.dequeue());
-  }
+    myResponse[i] = queue.dequeue();
+  } 
+ Wire.write ((const byte *) myResponse, count & 7); 
 }  
 
 
