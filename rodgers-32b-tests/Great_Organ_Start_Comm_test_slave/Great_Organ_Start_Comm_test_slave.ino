@@ -119,14 +119,12 @@ void loop()
     //if the key has been pressed and it was not pressed before, send the note on message and set keyPressed to true
     if ((digitalRead(greatNotes[noteCounter]) == LOW) && (keyPressed[noteCounter] == false))
     {
-      Serial.println("A note was pressed!");
       keyPressed[noteCounter] = true;
       noteOn(noteCounter);
     }
     //if the key is released and it was held before, send note off and set keyPressed to false
     else if ((digitalRead(greatNotes[noteCounter]) == HIGH) && (keyPressed[noteCounter] == true))
     {
-      Serial.println("A note was released.");
       keyPressed[noteCounter] = false;
       noteOff(noteCounter);
     }
@@ -154,11 +152,9 @@ void noteOff(int noteNum)
 //This transmits the pressed notes to the master board  
 void requestEvent() 
 {
-  Serial.println("master is requesting notes, in requestEvent");
   //if there's something in the queue, send it to the master board
   if (!queue.isEmpty()) 
   {
-    Serial.println("sending notes");
     Wire.write(queue.dequeue());
   }
 }  
