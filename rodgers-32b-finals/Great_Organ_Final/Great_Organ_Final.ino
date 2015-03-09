@@ -130,6 +130,7 @@ void loop()
       noteOff(noteCounter);
     }
   }
+  delay(10);
 }
 
 void noteOn(int noteNum)
@@ -150,26 +151,26 @@ volatile bool wantLength;
 // called by interrupt service routine when incoming data arrives
 void receiveEvent (int howMany)
  {
- command = Wire.read (); 
- wantLength = true;
+   command = Wire.read (); 
+   wantLength = true;
  }  // end of receiveEvent
 
 //This transmits the pressed notes to the master board  
 void requestEvent() 
 {
-   if (wantLength)
-   {
-     numNotesToSend = queue.count();
-     Wire.write ((byte) (numNotesToSend & 7));
-     wantLength = false;
-     return;
-   }
+  if (wantLength)
+  {
+    numNotesToSend = queue.count();
+    Wire.write ((byte) (numNotesToSend & 7));
+    wantLength = false;
+    return;
+  }
   byte myResponse [numNotesToSend];
   for(int i = 0; i < numNotesToSend; i++)
   {
     myResponse[i] = queue.dequeue();
   } 
- Wire.write ((const byte *) myResponse, numNotesToSend & 7); 
+  Wire.write ((const byte *) myResponse, numNotesToSend & 7); 
 }  
 
 

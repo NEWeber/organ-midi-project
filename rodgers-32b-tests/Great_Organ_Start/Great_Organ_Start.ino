@@ -124,7 +124,7 @@ void loop()
     }
   }
 
-delay(10);
+delay(5);
 }
 
 void noteOn(int noteNum)

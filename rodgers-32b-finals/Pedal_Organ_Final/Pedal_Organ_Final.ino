@@ -97,7 +97,8 @@ void loop()
       localNoteOff(noteCounter);
     }
   }
-queryKeyboard(1, 1);
+  queryKeyboard(1, 1);
+  queryKeyboard(2, 2);
 }
 
 void localNoteOn(int noteNum)
@@ -155,7 +156,7 @@ void queryKeyboard(int slaveAddress, int midiChannel)
   for (int i = 0; i < count; i++) 
   {
     rawDataToMidi(responseBuffer[i], midiChannel);
-    delay(.5);
+    delay(3);
   }
 }
 
