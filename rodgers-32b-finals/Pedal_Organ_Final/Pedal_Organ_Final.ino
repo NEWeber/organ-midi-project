@@ -53,6 +53,9 @@ const int g4Pin =  53;
 
 const int pedalForward = 2;
 
+const int leftExpressionPin = A0;
+const int rightExpressionPin = A1;
+
 // @todo: generate this with a constructor
 const int pedalNotes[NUM_KEYS] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f2Pin, f2SharpPin, g2Pin, g2SharpPin, a2Pin, a2SharpPin, b2Pin, c3Pin, c3SharpPin, d3Pin, d3SharpPin, e3Pin, f3Pin, f3SharpPin, g3Pin, g3SharpPin, a3Pin, a3SharpPin, b3Pin, c4Pin, c4SharpPin, d4Pin, d4SharpPin, e4Pin, f4Pin, f4SharpPin, g4Pin};
 
@@ -63,6 +66,9 @@ const int buttons[numButtons] = {pedalForward};
 
 boolean buttonPressed[numButtons];
 byte buttonToMidiMap[numButtons];
+
+int leftExpressionPedal;
+int rightExpressionPedal;
 
 void setup()
 {
@@ -100,6 +106,8 @@ void setup()
   //Set up Serial out to send debugging messages to the computer.
   Serial.begin(9600);
   
+  pinMode(leftExpressionPin, INPUT);
+  
 }
 
 
@@ -136,6 +144,147 @@ void loop()
     }
   }
   
+  int newLeftExpressionMeasurement;
+  int leftExpressionMeasurement = analogRead(leftExpressionPin);
+  if (leftExpressionMeasurement < 284) {
+    newLeftExpressionMeasurement = 0;
+  }
+  else if (leftExpressionMeasurement < 353) {
+    newLeftExpressionMeasurement = 1;
+  }
+  else if (leftExpressionMeasurement < 422) {
+    newLeftExpressionMeasurement = 2;
+  }
+  else if (leftExpressionMeasurement < 491) {
+    newLeftExpressionMeasurement = 3;
+  }
+  else if (leftExpressionMeasurement < 560) {
+    newLeftExpressionMeasurement = 4;
+  }
+  else if (leftExpressionMeasurement < 629) {
+    newLeftExpressionMeasurement = 5;
+  }
+  else if (leftExpressionMeasurement < 698) {
+    newLeftExpressionMeasurement = 6;
+  }
+  else {
+    newLeftExpressionMeasurement = 7;
+  }
+  
+  if (newLeftExpressionMeasurement != leftExpressionPedal) {
+    if (newLeftExpressionMeasurement == 0) {
+      Serial1.write(0xB0);
+      Serial1.write(1);
+      Serial1.write(0);
+    } 
+    else if (newLeftExpressionMeasurement == 1) {
+      Serial1.write(0xB0);
+      Serial1.write(1);
+      Serial1.write(21);
+    } 
+    else if (newLeftExpressionMeasurement == 2) {
+      Serial1.write(0xB0);
+      Serial1.write(1);
+      Serial1.write(42);
+    }
+   else if (newLeftExpressionMeasurement == 3) {
+      Serial1.write(0xB0);
+      Serial1.write(1);
+      Serial1.write(63);
+    }  
+    else if (newLeftExpressionMeasurement == 4) {
+      Serial1.write(0xB0);
+      Serial1.write(1);
+      Serial1.write(80);
+    } 
+    else if (newLeftExpressionMeasurement == 5) {
+      Serial1.write(0xB0);
+      Serial1.write(1);
+      Serial1.write(97);
+    } 
+    else if (newLeftExpressionMeasurement == 6) {
+      Serial1.write(0xB0);
+      Serial1.write(1);
+      Serial1.write(114);
+    } 
+    else if (newLeftExpressionMeasurement == 7) {
+      Serial1.write(0xB0);
+      Serial1.write(1);
+      Serial1.write(127);
+    } 
+    leftExpressionPedal = newLeftExpressionMeasurement;
+  }
+  
+  int newRightExpressionMeasurement;
+  int rightExpressionMeasurement = analogRead(rightExpressionPin);
+  if (rightExpressionMeasurement < 340) {
+    newRightExpressionMeasurement = 0;
+  }
+  else if (rightExpressionMeasurement < 390) {
+    newRightExpressionMeasurement = 1;
+  }
+  else if (rightExpressionMeasurement < 440) {
+    newRightExpressionMeasurement = 2;
+  }
+  else if (rightExpressionMeasurement < 490) {
+    newRightExpressionMeasurement = 3;
+  }
+  else if (rightExpressionMeasurement < 540) {
+    newRightExpressionMeasurement = 4;
+  }
+  else if (rightExpressionMeasurement < 590) {
+    newRightExpressionMeasurement = 5;
+  }
+  else if (rightExpressionMeasurement < 639) {
+    newRightExpressionMeasurement = 6;
+  }
+  else {
+    newRightExpressionMeasurement = 7;
+  }
+  
+  if (newRightExpressionMeasurement != rightExpressionPedal) {
+    if (newRightExpressionMeasurement == 0) {
+      Serial1.write(0xB0);
+      Serial1.write(2);
+      Serial1.write(0);
+    } 
+    else if (newRightExpressionMeasurement == 1) {
+      Serial1.write(0xB0);
+      Serial1.write(2);
+      Serial1.write(21);
+    } 
+    else if (newRightExpressionMeasurement == 2) {
+      Serial1.write(0xB0);
+      Serial1.write(2);
+      Serial1.write(42);
+    }
+   else if (newRightExpressionMeasurement == 3) {
+      Serial1.write(0xB0);
+      Serial1.write(2);
+      Serial1.write(63);
+    }  
+    else if (newRightExpressionMeasurement == 4) {
+      Serial1.write(0xB0);
+      Serial1.write(2);
+      Serial1.write(80);
+    } 
+    else if (newRightExpressionMeasurement == 5) {
+      Serial1.write(0xB0);
+      Serial1.write(2);
+      Serial1.write(97);
+    } 
+    else if (newRightExpressionMeasurement == 6) {
+      Serial1.write(0xB0);
+      Serial1.write(2);
+      Serial1.write(114);
+    } 
+    else if (newRightExpressionMeasurement == 7) {
+      Serial1.write(0xB0);
+      Serial1.write(2);
+      Serial1.write(127);
+    } 
+    rightExpressionPedal = newRightExpressionMeasurement;
+  }
   
   
   queryKeyboard(1, 1);
@@ -198,7 +347,6 @@ void queryKeyboard(int slaveAddress, int midiChannel)
   for (int i = 0; i < count; i++) 
   {
     rawDataToMidi(responseBuffer[i], midiChannel);
-    delay(3);
   }
 }
 
