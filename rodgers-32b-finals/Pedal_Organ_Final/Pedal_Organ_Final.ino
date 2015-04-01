@@ -15,6 +15,7 @@ const int midiSerialRate = 31250;
 
 // how many keys
 #define NUM_KEYS 32
+const int numButtons = 1;
 
 // @todo: generate this with an object constructor
 const int c2Pin = 22;  
@@ -50,11 +51,18 @@ const int f4Pin = 51;
 const int f4SharpPin = 52;
 const int g4Pin =  53;
 
+const int pedalForward = 2;
+
 // @todo: generate this with a constructor
 const int pedalNotes[NUM_KEYS] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f2Pin, f2SharpPin, g2Pin, g2SharpPin, a2Pin, a2SharpPin, b2Pin, c3Pin, c3SharpPin, d3Pin, d3SharpPin, e3Pin, f3Pin, f3SharpPin, g3Pin, g3SharpPin, a3Pin, a3SharpPin, b3Pin, c4Pin, c4SharpPin, d4Pin, d4SharpPin, e4Pin, f4Pin, f4SharpPin, g4Pin};
 
 boolean keyPressed[NUM_KEYS];
 byte keyToMidiMap[NUM_KEYS];
+
+const int buttons[numButtons] = {pedalForward};
+
+boolean buttonPressed[numButtons];
+byte buttonToMidiMap[numButtons];
 
 void setup()
 {
@@ -67,9 +75,23 @@ void setup()
       note++;
    
   }
+  
+  
   //go through all the input pins for the great notes and set them to INPUT_PULLUP, so when it connects to ground it will trigger
   for (int i = 0; i < NUM_KEYS; i++) {
     pinMode(pedalNotes[i], INPUT_PULLUP);
+  }
+  
+  //start pedal forward
+  
+  for (int i = 0; i < numButtons; i++) {
+    pinMode(buttons[i], INPUT_PULLUP);
+  }
+  
+    for(int i = 0; i < numButtons; i++)
+  {
+      buttonPressed[i] = false;
+      buttonToMidiMap[i] = i + 3; 
   }
   
   Wire.begin();
@@ -97,8 +119,28 @@ void loop()
       localNoteOff(noteCounter);
     }
   }
+  
+  for (int buttonCounter = 0; buttonCounter < numButtons; buttonCounter++) {
+    //if the key has been pressed and it was not pressed before, send the note on message and set keyPressed to true
+    if ((digitalRead(buttons[buttonCounter]) == LOW) && (buttonPressed[buttonCounter] == false))
+    {
+      buttonPressed[buttonCounter] = true;
+      Serial1.write(0xB0);
+      Serial1.write(buttonToMidiMap[buttonCounter]);
+      Serial1.write(1);
+    }
+    //if the key is released and it was held before, send note off and set keyPressed to false
+    else if ((digitalRead(buttons[buttonCounter]) == HIGH) && (buttonPressed[buttonCounter] == true))
+    {
+      buttonPressed[buttonCounter] = false;
+    }
+  }
+  
+  
+  
   queryKeyboard(1, 1);
   queryKeyboard(2, 2);
+  queryKeyboard(3, 3);
 }
 
 void localNoteOn(int noteNum)
