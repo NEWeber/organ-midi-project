@@ -15,7 +15,7 @@ const int midiSerialRate = 31250;
 
 // how many keys
 #define NUM_KEYS 32
-const int numButtons = 1;
+const int numButtons = 7;
 
 // @todo: generate this with an object constructor
 const int c2Pin = 22;  
@@ -52,6 +52,12 @@ const int f4SharpPin = 52;
 const int g4Pin =  53;
 
 const int pedalForward = 2;
+const int button1Pin = 3;  
+const int button2Pin = 4;
+const int button3Pin = 5;
+const int button4Pin = 6;
+const int button5Pin = 7;  
+const int button6Pin = 8;
 
 const int leftExpressionPin = A0;
 const int rightExpressionPin = A1;
@@ -62,7 +68,7 @@ const int pedalNotes[NUM_KEYS] = {c2Pin, c2SharpPin, d2Pin, d2SharpPin, e2Pin, f
 boolean keyPressed[NUM_KEYS];
 byte keyToMidiMap[NUM_KEYS];
 
-const int buttons[numButtons] = {pedalForward};
+const int buttons[numButtons] = {pedalForward, button1Pin, button2Pin, button3Pin, button4Pin, button5Pin, button6Pin};
 
 boolean buttonPressed[numButtons];
 byte buttonToMidiMap[numButtons];
